@@ -17,7 +17,7 @@
                         <i class="fas fa-search"></i>
                     </div>
                 </div>
-                <button class="ml-4 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center">
+                <button id="click" class="ml-4 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center">
                     <i class="fas fa-user-plus mr-2"></i> Tambah Pengguna
                 </button>
             </div>
@@ -292,26 +292,216 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Tambah Pengguna Sederhana -->
+    <div id="tambah-pengguna-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+            <!-- Modal panel -->
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-emerald-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-user-plus text-emerald-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Tambah Pengguna Baru
+                            </h3>
+                            <div class="mt-4">
+                                <form action="{{ route('register') }}" method="POST" class="space-y-4 py-4">
+                                    @csrf
+                                
+                                    <!-- Nama -->
+                                    <div>
+                                        <label for="name" class="block text-sm font-medium text-gray-700">Username</label>
+                                        <input type="text" name="name" id="name" class="pl-2 py-1 mt-1 block w-full shadow-sm sm:text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500" required>
+                                    </div>
+                                
+                                    <!-- Email -->
+                                    <div>
+                                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                                        <input type="email" name="email" id="email" class="pl-2 py-1 mt-1 block w-full shadow-sm sm:text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500" required>
+                                    </div>
+                                
+                                    <!-- Password -->
+                                    <div>
+                                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                                        <input type="password" name="password" id="password" class="pl-2 py-1 mt-1 block w-full shadow-sm sm:text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500" required>
+                                    </div>
+                                
+                                    <!-- Role -->
+                                    <div>
+                                        <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
+                                        <select name="role" id="role" class="pl-2 py-1 mt-1 block w-full shadow-sm sm:text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500" required>
+                                            <option value="">-- Pilih Role --</option>
+                                            <option value="admin">Admin</option>
+                                            <option value="user">User</option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="submit-pengguna" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Simpan
+                    </button>
+                    <button type="button" id="close-modal" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
-    <script>
-        // Toggle sidebar on mobile
-        document.getElementById('sidebar-toggle').addEventListener('click', function() {
-            document.querySelector('.sidebar').classList.toggle('active');
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elemen-elemen modal
+        const modal = document.getElementById('tambah-pengguna-modal');
+        const openModalBtn = document.querySelector('button.bg-emerald-600'); // Tombol "Tambah Pengguna" di navbar
+        const closeModalBtn = document.getElementById('close-modal');
+        const submitBtn = document.getElementById('submit-pengguna'); // Tombol submit
+        const form = document.querySelector('form');
+        const togglePasswordBtn = document.getElementById('toggle-password'); // Jika ada elemen untuk toggle password
+        const passwordInput = document.getElementById('password'); // Input password
+
+        // Buka modal
+        openModalBtn.addEventListener('click', function() {
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden'); // Mencegah scroll pada body
         });
 
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            const sidebar = document.querySelector('.sidebar');
-            const sidebarToggle = document.getElementById('sidebar-toggle');
-            
-            if (window.innerWidth < 768 && 
-                !sidebar.contains(event.target) && 
-                !sidebarToggle.contains(event.target) && 
-                sidebar.classList.contains('active')) {
-                sidebar.classList.remove('active');
+        // Tutup modal
+        closeModalBtn.addEventListener('click', function() {
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            form.reset();
+        });
+
+        // Tutup modal jika klik di luar modal
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+                form.reset();
             }
+        });
+
+        // Submit form dan tutup modal
+        submitBtn.addEventListener('click', function() {
+            form.submit(); // Kirimkan form
+            modal.classList.add('hidden'); // Sembunyikan modal
+            document.body.classList.remove('overflow-hidden'); // Izinkan scroll pada body
+        });
+
+        // Toggle password visibility
+        if (togglePasswordBtn) {
+            togglePasswordBtn.addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        }
+    });
+</script>
+
+
+    <script>
+        // Script untuk menangani modal tambah akun
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elemen-elemen modal
+            const modal = document.getElementById('tambah-akun-modal');
+            const openModalBtn = document.querySelector('button.bg-emerald-600'); // Tombol "Tambah Pengguna" di navbar
+            const closeModalBtn = document.getElementById('close-modal');
+            const submitBtn = document.getElementById('submit-akun');
+            const generatePasswordBtn = document.getElementById('generate-password');
+            const passwordInput = document.getElementById('password');
+            const profilePictureInput = document.getElementById('profile-picture');
+            const previewImage = document.getElementById('preview-image');
+            const defaultIcon = document.getElementById('default-icon');
+
+            // Buka modal
+            openModalBtn.addEventListener('click', function() {
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden'); // Mencegah scroll pada body
+            });
+
+            // Tutup modal
+            closeModalBtn.addEventListener('click', function() {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+                document.getElementById('tambah-akun-form').reset();
+                previewImage.classList.add('hidden');
+                defaultIcon.classList.remove('hidden');
+            });
+
+            // Tutup modal jika klik di luar modal
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                    document.getElementById('tambah-akun-form').reset();
+                    previewImage.classList.add('hidden');
+                    defaultIcon.classList.remove('hidden');
+                }
+            });
+
+            // Generate password acak
+            generatePasswordBtn.addEventListener('click', function() {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+                let password = '';
+                for (let i = 0; i < 10; i++) {
+                    password += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                passwordInput.value = password;
+            });
+
+            // Preview gambar profil
+            profilePictureInput.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        previewImage.src = e.target.result;
+                        previewImage.classList.remove('hidden');
+                        defaultIcon.classList.add('hidden');
+                    }
+                    
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+
+            // Submit form
+            submitBtn.addEventListener('click', function() {
+                // Validasi form
+                const form = document.getElementById('tambah-akun-form');
+                if (form.checkValidity()) {
+                    // Di sini Anda bisa menambahkan kode untuk mengirim data ke server
+                    // Untuk demo, kita hanya akan menampilkan pesan sukses
+                    alert('Akun berhasil ditambahkan!');
+                    modal.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                    form.reset();
+                    previewImage.classList.add('hidden');
+                    defaultIcon.classList.remove('hidden');
+                } else {
+                    form.reportValidity();
+                }
+            });
         });
     </script>
 @endpush

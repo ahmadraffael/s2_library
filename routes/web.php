@@ -3,6 +3,7 @@
 use App\Http\Controllers\BooksController;
 use App\Models\Books;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 
 // Route::get('/', [BooksController::class, 'index'])->name('books.index');
 
@@ -16,6 +17,8 @@ use Illuminate\Support\Facades\Route;
 // Route::get('/', function (){
 //     return view('dashboard.index');
 // })->name('dashboard');
+
+Route::post('/register', [AuthController::class, 'register'])->name('register');
 
 Route::prefix('books')->group(function () {
     Route::get('/create', [BooksController::class, 'create'])->name('books.create');
